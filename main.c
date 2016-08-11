@@ -22,7 +22,7 @@ int next;
 char name[100];
 
 
-}typedef PART_EXT;
+}typedef EBR;
 
 struct mbr{
 int tamano;
@@ -40,29 +40,59 @@ PART part_4;
 void Leer_entrada()
     {
 
-        char dir[200];
-        char nueva[200] = "";
-        printf("ingrese la direccion: ");
-        fgets(dir,200,stdin);
+
+
+
+    //    printf("ingrese la direccion: ");
+      //  fgets(dir,200,stdin);
         char *token=NULL;
-        token=strtok(dir, " ");
+
+
+   static const char filename[] = "archivo.txt";
+   FILE *file = fopen ( filename, "r" );
+   if ( file != NULL )
+   {
+      char line [ 300]; /* or other suitable maximum line size */
+      while ( fgets ( line, sizeof line, file ) != NULL ) /* read a line */
+      {
+           char dir[200];
+        char nueva[200] = "";
+        char coman[200] = "";
+          printf("entre");
+         fputs ( line, stdout ); /* write the line */
+
+        token=strtok(line, " ");
 
         while(token!=NULL){
                 if(strcasecmp(token, "mkdisk")== 0){
                     printf("Dato: %s \n", token);
+                    strcpy(coman,token);
                     token=strtok(NULL," ");
                 }
-                if(strcasecmp(token, "mkdisk")!= 0){
+                else if(strcasecmp(token, "rmdisk")== 0){
 
+                     printf("Dato: %s \n", token);
+                     strcpy(coman,token);
+                    token=strtok(NULL," ");
+
+
+                }
+                else{
                     strcat(nueva,token);
                     strcat(nueva," ");
                     token=strtok(NULL," ");
-
-
                 }
             }
-            separar(nueva);
-
+            separar(coman,nueva);
+            coman[200]="";
+            nueva[200]="";
+      }
+      fclose(file);
+   }
+   else
+   {
+      perror ( filename ); /* why didn't the file open? */
+   }
 
 
 
@@ -70,21 +100,26 @@ void Leer_entrada()
 
 
 
-void separar(char cadena[200]){
-    int tam;
+void separar(char comando[200],char cadena[200]){
+    char  tam[100]="";
     int bandera = 0;
     char pathnuevo[100] ="";
     char namenuevo[100] = "";
     char unidad[50] ="";
-    char path[150] ="";
-    char name[150] = "";
     char nuevo[50] ="";
+
+    printf("\n*****%s",comando);
+    printf("\n%s",cadena);
+
+    if(strcasecmp(comando,"mkdisk")== 0){
 
     char *token1=NULL;
         char prueba[20] = " ";
         token1=strtok(cadena,prueba);
+        printf("\n\n%s",cadena);
         while(token1!=NULL){
                 strncpy(nuevo, &token1[0],7);
+                printf("\n/////////%s",nuevo);
                 if(strcasecmp(nuevo,"-path::")==0){
 
                     bandera = 1;
@@ -93,65 +128,148 @@ void separar(char cadena[200]){
 
                     bandera = 2;
                 }
+                if(strcasecmp(nuevo,"-size::")==0){
 
-                if(bandera == 1 ){
-                    strcat(pathnuevo,token1);
-                    strcat(pathnuevo," ");
-                    token1=strtok(NULL," ");
-
-
+                    bandera = 3;
                 }
-                else if(bandera == 2 ){
-                    strcat(namenuevo,token1);
-                    strcat(namenuevo," ");
-                    token1=strtok(NULL," ");
+                if(strcasecmp(nuevo,"+unit::")==0){
 
-
+                    bandera = 4;
                 }
 
+                if(bandera == 1){
 
-                    else{
 
-                    if(strcasecmp(token1, "-path")== 0){
-                        printf("entro");
-                        printf("Dato: %s \n", token1);
-                        token1=strtok(NULL," ");
-                    }
-                    else {
-                        printf("otro: %s \n", token1);
+
+                        strcat(pathnuevo,token1);
+                        strcat(pathnuevo," ");
+                        //printf("-----%s",pathnuevo);
                         token1=strtok(NULL," ");
 
-                    }
-                    bandera = 0;
 
-                }
+
+                    }
+
+
+
+                    if(bandera == 2 ){
+                        strcat(namenuevo,token1);
+                        strcat(namenuevo," ");
+                        //printf("-----%s",namenuevo);
+                        token1=strtok(NULL," ");
+
+
+                        }
+
+
+                    if(bandera == 3){
+                        //printf("entro");
+                        //printf("Dato: %s \n", token1);
+                        strcpy(tam,token1);
+                        token1=strtok(NULL," ");
+
+                    }
+                    if (bandera == 4){
+                            //printf("otro: %s \n", token1);
+                            strcpy(unidad,token1);
+                            token1=strtok(NULL," ");
+
+                    }
+
+
+                    }
+
+
+            crear_disco(tam,unidad,pathnuevo,namenuevo);
 
             }
-            printf("%s\n",pathnuevo);
-            printf("%s\n",namenuevo);
 
+            else if(strcasecmp(comando,"rmdisk")== 0)
+            {
+
+
+        int a = 0;
+        char *dire = cadena;
+
+        char direcc[200]="";
+
+        a = ("%d", strlen(dire));
+        //printf("%d",a);
+        strncpy(direcc, &dire[8],a-11);
+        printf("\n------%s",direcc);
+            remove(direcc);
+
+            }
 }
-void crear_disco(int tam, char uni[150], char path[150], char nombre[150]){
 
-        FILE* file = fopen(nombre,"ab");
+
+
+void crear_disco(char* tam, char* unidad, char* path, char* nombre){
+
+
+
+            printf("\n****%s",tam);
+            printf("\n****%s",unidad);
+            printf("\n****%s",path);
+            printf("\n****%s",nombre);
+
+        int tamano = 0;
+        int a = 0;
+        int b = 0;
+        char *tama= tam;
+        char *uni = unidad;
+        char *dire = path;
+        char *nom = nombre;
+
+
+        char taman[150]="";
+        char unit[150]="";
+        char direcc[200]="";
+        char direccion[200]="";
+        char name[150]="";
+
+        a = ("%d", strlen(dire));
+        //printf("%d",a);
+        strncpy(direcc, &dire[8],a-10);
+        printf("\n------%s",direcc);
+
+        strncpy(taman, &tama[7],sizeof(tama));
+        //printf("\n%s", taman);
+        tamano = atoi(taman);
+        printf("\n------%d", tamano);
+
+        strncpy(unit, &uni[7],sizeof(uni));
+        printf("\n------%s",unit);
+
+        b = ("%d", strlen(nom));
+        strncpy(name, &nom[8],b-11);
+        printf("\n------%s",name);
+
+        strcat(direccion,direcc);
+        strcat(direccion,name);
+        printf("\n la direccion es: %s",direccion);
+
+
+
+        FILE* file = fopen(direccion,"ab");
         char llenar[1024]="\0";
-        if(nombre ==NULL){
+        if(name ==NULL){
             printf("No se pudo acceder al archivo");
 
         }
         else{
-                if(strcmp(uni,"B")==0){
-                 for(int x = 0;x<(tam/1024);x++){
+                if(strcmp(unit,"B")==0){
+                 for(int x = 0;x<(tamano/1024);x++){
                     fwrite(llenar,sizeof(llenar),1,file);
                     }
                 }
-                else if(strcmp(uni,"k")==0){
-                    for(int x = 0;x<tam;x++){
+                else if(strcmp(unit,"k")==0){
+                    for(int x = 0;x<tamano;x++){
                     fwrite(llenar,sizeof(llenar),1,file);
                 }
                 }
-                else if(strcmp(uni,"M")==0){
-                    for(int x = 0;x<(tam*1024);x++){
+                else if(strcmp(unit,"M")==0){
+                    for(int x = 0;x<(tamano*1024);x++){
                     fwrite(llenar,sizeof(llenar),1,file);
                 }
                 }
@@ -168,7 +286,7 @@ int main()
     {
 
         Leer_entrada();
-        crear_disco(10,"M","jfas","prueba.txt");
+        //crear_disco(10,"M","jfas","prueba.txt");
 
 
 
