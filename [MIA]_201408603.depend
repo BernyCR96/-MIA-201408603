@@ -1,6 +1,7 @@
 # depslib dependency file v1.0
-1470939785 source:/home/cardona/Escritorio/[MIA]_201408603/main.c
+1471020376 source:/home/cardona/Escritorio/[MIA]_201408603/main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
+	<time.h>
 
