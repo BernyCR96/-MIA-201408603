@@ -1,4 +1,5 @@
 mkdisk -size::3 -path::"/home/cardona/Escritorio/prueba123/" +unit::k -name::"disco duro.sh"
-fdisk -size::300 -path::"/home/cardona/Escritorio/prueba123/disco duro.sh" +unit::k -name::"disco duro.sh" +type::p +fit::BF +delete::fast +add::50000
+fdisk -size::20 -path::"/home/cardona/Escritorio/prueba123/disco duro.sh" +unit::B -name::"part1" +type::p +fit::BF +delete::fast +add::50000
+fdisk -size::4 -path::"/home/cardona/Escritorio/prueba123/disco duro.sh" +unit::K -name::"part2" +type::p +fit::BF +delete::fast +add::50000
 
 

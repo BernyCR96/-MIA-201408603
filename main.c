@@ -327,7 +327,7 @@ void crear_disco(char* tam, char* unidad, char* path, char* nombre){
 
 
         MBR disco;
-
+        printf("\nel tamaño del mbr es %i",sizeof(disco));
         int tamano = 0;
         int t = 0;
         int a = 0;
@@ -429,7 +429,8 @@ void crear_disco(char* tam, char* unidad, char* path, char* nombre){
 void agregar_particion(char* tam, char* unidad, char* path, char* nombre, char* fit, char* agregar, char*eliminar, char* tipo){
 
         int ban_part = 0;
-        int indicador_particion =0;
+        int existe = 0;
+        int indicador_particion =-1;
         int tamano = 0;
         int t = 0;
         int a = 0;
@@ -455,15 +456,33 @@ void agregar_particion(char* tam, char* unidad, char* path, char* nombre, char* 
         strncpy(direcc, &path[8],a-10);
         printf("\n------%s",direcc);
 
-        strncpy(taman, &tam[7],sizeof(tam));
-        tamano = atoi(taman);
-        printf("\n------%d", tamano);
+
 
         strncpy(unit, &unidad[7],sizeof(unidad));
         printf("\n------%s",unit);
 
         strncpy(fitnuevo, &fit[6],sizeof(fit));
         printf("\n------%s",fitnuevo);
+
+                        if(strcasecmp(unit,"B")==0){
+                            strncpy(taman, &tam[7],sizeof(tam));
+                            tamano = atoi(taman);
+
+                        }
+                        else if(strcasecmp(unit,"K")==0){
+                            strncpy(taman, &tam[7],sizeof(tam));
+                            tamano = atoi(taman);
+                            tamano = tamano *1000;
+                        }
+                        else if(strcasecmp(unit,"M")==0){
+                            strncpy(taman, &tam[7],sizeof(tam));
+                            tamano = atoi(taman);
+                            tamano = tamano *1000*1000;
+                        }
+
+
+
+        printf("\n-----1321321321-%d", tamano);
 
         strncpy(delnuevo, &agregar[9],sizeof(agregar));
         printf("\n------%s",delnuevo);
@@ -478,7 +497,7 @@ void agregar_particion(char* tam, char* unidad, char* path, char* nombre, char* 
         strncpy(name, &nombre[8],b-11);
         printf("\n------%s",name);
 
-
+        MBR nueva_particion;
 
         /* LEER EL ARCHIVO Y BUSCAR EL MBR*/
         FILE* file = fopen(direcc,"rb");
@@ -487,98 +506,149 @@ void agregar_particion(char* tam, char* unidad, char* path, char* nombre, char* 
             printf("\nno se pudo acceder al archivo");
        }
         else{
-
-
-            MBR nueva_particion;
-
+             existe = 1;
             fread(&nueva_particion, sizeof(MBR),1,file);
+        }
 
+        int tam_total = 0;
+        int ban_crear = 0;
+
+        int espacio_mbr = (int) sizeof(MBR);
+
+        int espacio_particiones = 0;
+
+        int particiones_disponibles = 0;
+        int inicio_particion = (int) sizeof(MBR);
+
+        if(existe == 1){
+                    printf("aaaaaaaaaaaaaaaaaaa%s",nueva_particion.part[0].status);
                     printf("\n\nel estado ahora creado es%s",nueva_particion.time);
                     for(int j=0;j<=3;j++){
-
+                         espacio_particiones += nueva_particion.part[j].tamano;
                          if(strcasecmp(nueva_particion.part[j].status,"0")==0){
 
-                            ban_part = ban_part + 1;
-                            indicador_particion = j;
+                            if(indicador_particion == -1){
+                                    indicador_particion = j;
+                            }
+                            else{
+                                indicador_particion = indicador_particion;
+                            }
+                            ban_part++;
+
 
                          }
+                         else{
+                            if(indicador_particion == -1){
+                                inicio_particion += nueva_particion.part[j].tamano;
+                            }
+
+
+                         }
+
+
                     }
-                    if(ban_part == 4){
-                        printf("no ha ninguna particion");
-                        strcpy(nueva_particion.part[0].tipo,type);
-                        strcpy(nueva_particion.part[0].name,name);
-                        strcpy(nueva_particion.part[0].status,"1");
+                     printf("\nel numero de mi particion es%i",indicador_particion);
+                         printf("\n el indice es: %d",indicador_particion);
+                         printf("\n\nel tamaño de la particion%i",nueva_particion.tamano);
+                         printf("\n\nel Esparcio%i",espacio_particiones);
+                         printf("\n\nel el MBR es%i",sizeof(nueva_particion));
+
+
+                         tam_total = nueva_particion.tamano -espacio_particiones - sizeof(nueva_particion);
+
+                         printf("\n\nel tamaño total es%i",tam_total);
+                         printf("\n\nel tamaño total es%i",tamano);
+                       if(tam_total > tamano && ban_part>0){
+                             printf("\nel numero de mi particion es%i",indicador_particion);
+                            ban_crear = 1;
+                                   }
+
+                        }
+
+                       if(ban_crear == 1){
+                            if(strcasecmp(type,"P")==0)
+                                {
+
+                             printf("\nel numero de mi particion es%i",indicador_particion);
+                             strcpy(nueva_particion.part[indicador_particion].tipo,type);
+                        strcpy(nueva_particion.part[indicador_particion].name,name);
+                        strcpy(nueva_particion.part[indicador_particion].status,"1");
+
+
                         if(strcasecmp(fitnuevo,"")==0){
                             strcpy(fitnuevo,"WF");
                         }
-                        strcpy(nueva_particion.part[0].fit,strcpy);
+                        strcpy(nueva_particion.part[indicador_particion].fit,fitnuevo);
                         tam_particion = nueva_particion.tamano - sizeof(nueva_particion);
-                        nueva_particion.part[0].inicio = sizeof(MBR);
-                        if(strcasecmp(unit,"B")==0){
-                            nueva_particion.part[0].tamano = tamano;
-                        }
-                        else if(strcasecmp(unit,"K")==0){
-                            nueva_particion.part[0].tamano = tamano*1000;
-                        }
-                        else if(strcasecmp(unit,"M")==0){
-                            nueva_particion.part[0].tamano = tamano*1000*1000;
-                        }
+                        nueva_particion.part[indicador_particion].tamano = tamano;
+                        nueva_particion.part[indicador_particion].inicio = sizeof(nueva_particion);
                         printf("\n6666666666666-----%d",tam_particion);
-                        printf("\n6666666666666-----%d",nueva_particion.tamano);
+                        printf("\n6666666666666-----%d",nueva_particion.part[indicador_particion].tamano);
 
-                        FILE* file1 = fopen(direcc,"wb+");
-
+                        FILE *file1;
+                        file1 = fopen(direcc,"rb+");
                         fseek(file1,0,SEEK_SET);
-                        fwrite(&nueva_particion, sizeof(MBR),1,file1);
-
+                        fwrite(&nueva_particion,sizeof(MBR),1,file1);
                         fclose(file1);
 
 
-                    }
-
-
-
-                if(strcasecmp(nueva_particion.part[0].status,"1")==0){
-
-
-                    printf("\n8888888-%d",nueva_particion.part[0].inicio);
-                    printf("hola ya lei tu particion  1");
-                    bandera = 1;
-                }
-                else{
-                        if(strcasecmp(nueva_particion.part[1].status,"0")==0){
-                            printf("hola ya lei tu MBR");
-
-                            bandera = 1;
-                        }
-                        else{
-                            if(strcasecmp(nueva_particion.part[2].status,"0")==0){
-                            printf("hola ya lei tu MBR");
-
-                            bandera = 1;
-                            }
-                            else{
-                                if(strcasecmp(nueva_particion.part[3].status,"0")==0){
-                                printf("hola ya lei tu MBR");
-
-                                bandera = 1;
+                        printf("\n\n555555555555555%s",nueva_particion.part[0].status);
+                        file1 = fopen(direcc,"rb+");
+                        fseek(file1,nueva_particion.part[indicador_particion].inicio,SEEK_SET);
+                        fwrite(&nueva_particion.part[indicador_particion],sizeof(PART),1,file1);
+                        fclose(file1);
                                 }
 
-                            }
+                        else{
+
+
+
+                        strcpy(nueva_particion.part[indicador_particion].tipo,type);
+                        strcpy(nueva_particion.part[indicador_particion].name,name);
+                        strcpy(nueva_particion.part[indicador_particion].status,"1");
+
+
+                        if(strcasecmp(fitnuevo,"")==0){
+                            strcpy(fitnuevo,"WF");
                         }
+                        strcpy(nueva_particion.part[indicador_particion].fit,strcpy);
+                        tam_particion = nueva_particion.tamano - sizeof(nueva_particion);
+                        nueva_particion.part[indicador_particion].tamano = tamano;
+                        nueva_particion.part[indicador_particion].inicio = sizeof(nueva_particion);
 
-                }
-            }
+                                EBR exte;
+                                strcpy(exte.fit,fitnuevo);
+                                strcpy(exte.name,name);
+                                strcpy(exte.status,"1");
+                                exte.tamano = tamano;
+                                exte.inicio = sizeof(nueva_particion);
+                                exte.next = sizeof(nueva_particion)+ 1 ;
 
-            if(bandera == 0){
-                printf("NO EXISTE EL MBR");
-            }
-
-            //fclose(file);
-
-
+                                FILE *file1;
+                        file1 = fopen(direcc,"rb+");
+                        fseek(file1,0,SEEK_SET);
+                        fwrite(&nueva_particion,sizeof(MBR),1,file1);
+                        fclose(file1);
 
 
+                        printf("\n\n555555555555555%s",nueva_particion.part[0].status);
+                        file1 = fopen(direcc,"rb+");
+                        fseek(file1,nueva_particion.part[indicador_particion].inicio,SEEK_SET);
+                        fwrite(&exte,sizeof(PART),1,file1);
+                        fclose(file1);
+
+
+
+                            }
+
+
+                          }
+
+
+                            else
+    {
+        printf("\n\n no se pudo crear la particion: ",name);
+    }
 
 
 
